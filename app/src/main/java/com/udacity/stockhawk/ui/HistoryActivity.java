@@ -89,7 +89,7 @@ public class HistoryActivity extends AppCompatActivity
         }
 
         mChart.setBackgroundColor(Color.TRANSPARENT);
-        mChart.setDrawGridBackground(true);
+        mChart.setDrawGridBackground(false);
         mChart.setMaxVisibleValueCount(40);
         mChart.getDescription().setEnabled(false);
         mChart.setTouchEnabled(true);
@@ -99,6 +99,7 @@ public class HistoryActivity extends AppCompatActivity
         mChart.setPinchZoom(false);
         mChart.getAxisRight().setEnabled(false);
         mChart.getLegend().setEnabled(false);
+        mChart.setNoDataTextColor(Color.WHITE);
     }
 
     @Override
