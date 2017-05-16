@@ -8,6 +8,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Handler;
+import android.os.Looper;
+import android.widget.Toast;
 
 import com.udacity.stockhawk.data.Contract;
 import com.udacity.stockhawk.data.PrefUtils;
@@ -40,7 +43,7 @@ public final class QuoteSyncJob {
     private QuoteSyncJob() {
     }
 
-    static void getQuotes(Context context) {
+    static void getQuotes(final Context context) {
 
         Timber.d("Running sync job");
 
@@ -68,13 +71,18 @@ public final class QuoteSyncJob {
 
             ArrayList<ContentValues> quoteCVs = new ArrayList<>();
 
+            final Set<String> symbolsNotExist = new HashSet<>();
+
             while (iterator.hasNext()) {
                 String symbol = iterator.next();
 
 
                 Stock stock = quotes.get(symbol);
+                if (stock == null || stock.getQuote() == null) {
+                    symbolsNotExist.add(symbol);
+                    continue;
+                }
                 StockQuote quote = stock.getQuote();
-
                 float price = quote.getPrice().floatValue();
                 float change = quote.getChange().floatValue();
                 float percentChange = quote.getChangeInPercent().floatValue();
@@ -113,6 +121,21 @@ public final class QuoteSyncJob {
             Intent dataUpdatedIntent = new Intent(ACTION_DATA_UPDATED);
             context.sendBroadcast(dataUpdatedIntent);
 
+            if (!symbolsNotExist.isEmpty()) {
+                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                    @Override
+                    public void run() {
+                        StringBuilder sb = new StringBuilder("Symbol(s) do not exist: ");
+                        for (String s : symbolsNotExist) {
+                            sb.append(s);
+                            sb.append(",");
+                            PrefUtils.removeStock(context, s);
+                        }
+                        sb.delete(sb.length() - 1, sb.length());
+                        Toast.makeText(context, sb.toString(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
         } catch (IOException exception) {
             Timber.e(exception, "Error fetching stock quotes");
         }

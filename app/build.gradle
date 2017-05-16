@@ -1,5 +1,5 @@
 apply plugin: 'com.android.application'
-apply plugin: 'com.neenbedankt.android-apt'
+apply plugin: 'me.tatarka.retrolambda'
 apply plugin: 'com.noveogroup.android.check'
 
 repositories {
@@ -38,6 +38,11 @@ android {
     lintOptions {
         warning 'InvalidPackage'
     }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 }
 
 check {
@@ -49,17 +54,33 @@ check {
     }
 }
 
+ext {
+    supportLibVersion = "25.3.1"
+    butterknifeVersion = "8.5.1"
+    guavaVersion = "20.0"
+    yahooFinanceAPIVersion = "3.6.1"
+    opencsvVersion = "2.3"
+    timberVersion = "4.4.0"
+    mPAndroidChartVersion = "v3.0.2"
+    rxjavaVersion = "2.0.5"
+    rxandroidVersion = "2.0.1"
+    jodatimeVersion = "2.9.9"
+}
+
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:25.1.0'
-    compile 'com.android.support:recyclerview-v7:25.1.0'
-    compile 'com.android.support:design:25.1.0'
-    compile 'com.jakewharton:butterknife:8.4.0'
-    apt 'com.jakewharton:butterknife-compiler:8.4.0'
-    compile 'com.google.guava:guava:20.0'
-    compile 'com.yahoofinance-api:YahooFinanceAPI:3.5.0'
-    compile 'com.jakewharton.timber:timber:4.4.0'
-    compile 'net.sf.opencsv:opencsv:2.3'
-    compile 'com.github.PhilJay:MPAndroidChart:v3.0.1'
+    compile "com.android.support:appcompat-v7:$supportLibVersion"
+    compile "com.android.support:recyclerview-v7:$supportLibVersion"
+    compile "com.android.support:design:$supportLibVersion"
+    compile "com.jakewharton:butterknife:$butterknifeVersion"
+    annotationProcessor "com.jakewharton:butterknife-compiler:$butterknifeVersion"
+    compile "com.google.guava:guava:$guavaVersion"
+    compile "com.yahoofinance-api:YahooFinanceAPI:$yahooFinanceAPIVersion"
+    compile "net.sf.opencsv:opencsv:$opencsvVersion"
+    compile "com.jakewharton.timber:timber:$timberVersion"
+    compile "com.github.PhilJay:MPAndroidChart:$mPAndroidChartVersion"
+    compile "io.reactivex.rxjava2:rxjava:$rxjavaVersion"
+    compile "io.reactivex.rxjava2:rxandroid:$rxandroidVersion"
+    compile "joda-time:joda-time:$jodatimeVersion"
 }
