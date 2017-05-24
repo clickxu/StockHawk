@@ -27,6 +27,12 @@
                   android:parentActivityName=".ui.MainActivity"
                   android:exported="false"/>
 
+        <activity android:name=".widget.StockWidgetConfigActivity">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE"/>
+            </intent-filter>
+        </activity>
+
         <service
             android:name=".sync.QuoteIntentService"
             android:exported="false" />
@@ -34,13 +40,25 @@
         <provider
             android:name=".data.StockProvider"
             android:authorities="com.udacity.stockhawk"
-            android:exported="false" />
+            android:exported="true" />
 
         <service
             android:name=".sync.QuoteJobService"
             android:enabled="true"
             android:exported="true"
             android:permission="android.permission.BIND_JOB_SERVICE" />
+
+        <receiver
+            android:name=".widget.StockWidgetProvider">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider"
+                       android:resource="@xml/stock_widget_info" />
+        </receiver>
+
+        <service android:name=".widget.WidgetService"
+                 android:permission="android.permission.BIND_REMOTEVIEWS" />
     </application>
 
 </manifest>

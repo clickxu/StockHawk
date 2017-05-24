@@ -15,6 +15,7 @@ import android.widget.Toast;
 import com.udacity.stockhawk.data.Contract;
 import com.udacity.stockhawk.data.PrefUtils;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -44,41 +45,28 @@ public final class QuoteSyncJob {
     }
 
     static void getQuotes(final Context context) {
-
         Timber.d("Running sync job");
 
         Calendar from = Calendar.getInstance();
         Calendar to = Calendar.getInstance();
         from.add(Calendar.YEAR, -YEARS_OF_HISTORY);
-
         try {
-
             Set<String> stockPref = PrefUtils.getStocks(context);
             Set<String> stockCopy = new HashSet<>();
             stockCopy.addAll(stockPref);
             String[] stockArray = stockPref.toArray(new String[stockPref.size()]);
-
             Timber.d(stockCopy.toString());
-
             if (stockArray.length == 0) {
                 return;
             }
-
             Map<String, Stock> quotes = YahooFinance.get(stockArray);
             Iterator<String> iterator = stockCopy.iterator();
-
             Timber.d(quotes.toString());
-
             ArrayList<ContentValues> quoteCVs = new ArrayList<>();
-
             final Set<String> symbolsNotExist = new HashSet<>();
-
             while (iterator.hasNext()) {
                 String symbol = iterator.next();
-
-
                 Stock stock = quotes.get(symbol);
-
                 if (stock == null || stock.getQuote() == null
                         || stock.getQuote().getPrice() == null) {
                     symbolsNotExist.add(symbol);
@@ -88,18 +76,19 @@ public final class QuoteSyncJob {
                 float price = quote.getPrice().floatValue();
                 float change = quote.getChange().floatValue();
                 float percentChange = quote.getChangeInPercent().floatValue();
-
                 // WARNING! Don't request historical data for a stock that doesn't exist!
                 // The request will hang forever X_x
-                List<HistoricalQuote> history = stock.getHistory(from, to, Interval.WEEKLY);
-
                 StringBuilder historyBuilder = new StringBuilder();
-
-                for (HistoricalQuote it : history) {
-                    historyBuilder.append(it.getDate().getTimeInMillis());
-                    historyBuilder.append(", ");
-                    historyBuilder.append(it.getClose());
-                    historyBuilder.append("\n");
+                try {
+                    List<HistoricalQuote> history = stock.getHistory(from, to, Interval.WEEKLY);
+                    for (HistoricalQuote it : history) {
+                        historyBuilder.append(it.getDate().getTimeInMillis());
+                        historyBuilder.append(", ");
+                        historyBuilder.append(it.getClose());
+                        historyBuilder.append("\n");
+                    }
+                } catch (FileNotFoundException e) {
+                    Timber.e(e);
                 }
 
                 ContentValues quoteCV = new ContentValues();
@@ -107,12 +96,9 @@ public final class QuoteSyncJob {
                 quoteCV.put(Contract.Quote.COLUMN_PRICE, price);
                 quoteCV.put(Contract.Quote.COLUMN_PERCENTAGE_CHANGE, percentChange);
                 quoteCV.put(Contract.Quote.COLUMN_ABSOLUTE_CHANGE, change);
-
-
                 quoteCV.put(Contract.Quote.COLUMN_HISTORY, historyBuilder.toString());
 
                 quoteCVs.add(quoteCV);
-
             }
 
             context.getContentResolver()
@@ -124,18 +110,15 @@ public final class QuoteSyncJob {
             context.sendBroadcast(dataUpdatedIntent);
 
             if (!symbolsNotExist.isEmpty()) {
-                new Handler(Looper.getMainLooper()).post(new Runnable() {
-                    @Override
-                    public void run() {
-                        StringBuilder sb = new StringBuilder("Symbol(s) do not exist: ");
-                        for (String s : symbolsNotExist) {
-                            sb.append(s);
-                            sb.append(",");
-                            PrefUtils.removeStock(context, s);
-                        }
-                        sb.delete(sb.length() - 1, sb.length());
-                        Toast.makeText(context, sb.toString(), Toast.LENGTH_SHORT).show();
+                new Handler(Looper.getMainLooper()).post(() -> {
+                    StringBuilder sb = new StringBuilder("Symbol(s) do not exist: ");
+                    for (String s : symbolsNotExist) {
+                        sb.append(s);
+                        sb.append(",");
+                        PrefUtils.removeStock(context, s);
                     }
+                    sb.delete(sb.length() - 1, sb.length());
+                    Toast.makeText(context, sb.toString(), Toast.LENGTH_SHORT).show();
                 });
             }
         } catch (IOException exception) {
@@ -145,31 +128,22 @@ public final class QuoteSyncJob {
 
     private static void schedulePeriodic(Context context) {
         Timber.d("Scheduling a periodic task");
-
-
-        JobInfo.Builder builder = new JobInfo.Builder(PERIODIC_ID, new ComponentName(context, QuoteJobService.class));
-
-
+        JobInfo.Builder builder = new JobInfo.Builder(PERIODIC_ID,
+                new ComponentName(context, QuoteJobService.class));
         builder.setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
                 .setPeriodic(PERIOD)
                 .setBackoffCriteria(INITIAL_BACKOFF, JobInfo.BACKOFF_POLICY_EXPONENTIAL);
-
-
         JobScheduler scheduler = (JobScheduler) context.getSystemService(Context.JOB_SCHEDULER_SERVICE);
-
         scheduler.schedule(builder.build());
     }
 
 
     public static synchronized void initialize(final Context context) {
-
         schedulePeriodic(context);
         syncImmediately(context);
-
     }
 
     public static synchronized void syncImmediately(Context context) {
-
         ConnectivityManager cm =
                 (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = cm.getActiveNetworkInfo();
@@ -177,21 +151,12 @@ public final class QuoteSyncJob {
             Intent nowIntent = new Intent(context, QuoteIntentService.class);
             context.startService(nowIntent);
         } else {
-
-            JobInfo.Builder builder = new JobInfo.Builder(ONE_OFF_ID, new ComponentName(context, QuoteJobService.class));
-
-
+            JobInfo.Builder builder = new JobInfo.Builder(ONE_OFF_ID,
+                    new ComponentName(context, QuoteJobService.class));
             builder.setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
                     .setBackoffCriteria(INITIAL_BACKOFF, JobInfo.BACKOFF_POLICY_EXPONENTIAL);
-
-
             JobScheduler scheduler = (JobScheduler) context.getSystemService(Context.JOB_SCHEDULER_SERVICE);
-
             scheduler.schedule(builder.build());
-
-
         }
     }
-
-
 }

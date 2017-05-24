@@ -245,7 +245,6 @@ public class HistoryActivity extends AppCompatActivity
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         Timber.d("onLoadFinished : " + loader.getId());
         if (data.getCount() == 0) {
-            //TODO: No data
             return;
         }
         data.moveToFirst();
