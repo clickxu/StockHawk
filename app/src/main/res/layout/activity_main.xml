@@ -56,6 +56,7 @@
             android:layout_gravity="center"
             android:textAppearance="@android:style/TextAppearance.Medium"
             android:visibility="gone"
+            android:padding="@dimen/content_horizontal_padding"
             tools:text="Error message" />
     </FrameLayout>
 </LinearLayout>
