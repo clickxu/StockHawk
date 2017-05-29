@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.app.NavUtils;
+import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
@@ -51,7 +52,7 @@ import timber.log.Timber;
 public class HistoryActivity extends AppCompatActivity
         implements LoaderManager.LoaderCallbacks<Cursor> {
 
-    private static final String TARGET_SYMBOL = "target_symbol";
+    public static final String TARGET_SYMBOL = "target_symbol";
     private static final int HISTORY_LOADER = 1;
 
     private CompositeDisposable mDisposables = new CompositeDisposable();
@@ -100,12 +101,27 @@ public class HistoryActivity extends AppCompatActivity
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem menuItem) {
-        if (menuItem.getItemId() == android.R.id.home) {
-            NavUtils.navigateUpFromSameTask(this);
-            return true;
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            // Respond to the action bar's Up/Home button
+            case android.R.id.home:
+                Intent upIntent = NavUtils.getParentActivityIntent(this);
+                if (NavUtils.shouldUpRecreateTask(this, upIntent) || isTaskRoot()) {
+                    // This activity is NOT part of this app's task, so create a new task
+                    // when navigating up, with a synthesized back stack.
+                    TaskStackBuilder.create(this)
+                            // Add all of this activity's parents to the back stack
+                            .addNextIntentWithParentStack(upIntent)
+                            // Navigate up to the closest parent
+                            .startActivities();
+                } else {
+                    // This activity is part of this app's task, so simply
+                    // navigate up to the logical parent activity.
+                    NavUtils.navigateUpTo(this, upIntent);
+                }
+                return true;
         }
-        return super.onOptionsItemSelected(menuItem);
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -132,15 +148,15 @@ public class HistoryActivity extends AppCompatActivity
                     ArrayList<Entry> values = new ArrayList<>();
                     String[] historyRecords = history.split("\n");
 
-                    int index = historyRecords.length;
+                    int index = 0;
                     for (String record : historyRecords) {
                         String[] entry = record.split(",");
                         float val = Float.parseFloat(entry[1]);
                         DateTime dateTime = new DateTime()
                                 .withMillis(Long.parseLong(entry[0]));
-                        values.add(new Entry(--index, val, null, dateTime.toString("MM/dd/yyyy")));
+                        values.add(new Entry(index++, val, null, dateTime.toString("MM/dd/yyyy")));
                     }
-                    Collections.reverse(values);
+                    //Collections.reverse(values);
                     return Observable.just(values);
                 })
                 .subscribeOn(Schedulers.computation())

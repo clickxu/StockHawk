@@ -14,6 +14,7 @@ import com.udacity.stockhawk.data.PrefUtils;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import timber.log.Timber;
 
 import static com.udacity.stockhawk.util.FormatUtils.sDollarFormat;
 import static com.udacity.stockhawk.util.FormatUtils.sDollarFormatWithPlus;
@@ -78,6 +79,7 @@ class StockAdapter extends RecyclerView.Adapter<StockAdapter.StockViewHolder> {
 
     @Override
     public int getItemCount() {
+
         int count = 0;
         if (cursor != null) {
             count = cursor.getCount();

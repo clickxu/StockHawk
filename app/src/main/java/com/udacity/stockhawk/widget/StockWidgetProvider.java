@@ -8,7 +8,8 @@ import android.content.Intent;
 import android.widget.RemoteViews;
 
 import com.udacity.stockhawk.R;
-import com.udacity.stockhawk.ui.MainActivity;
+import com.udacity.stockhawk.sync.QuoteIntentService;
+import com.udacity.stockhawk.ui.HistoryActivity;
 
 /**
  * Created by t-xu on 5/22/17.
@@ -16,30 +17,14 @@ import com.udacity.stockhawk.ui.MainActivity;
 
 public class StockWidgetProvider extends AppWidgetProvider {
 
-
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
-        final int N = appWidgetIds.length;
-
-        // Perform this loop procedure for each App Widget that belongs to this provider
-        for (int i=0; i<N; i++) {
-            int appWidgetId = appWidgetIds[i];
-
-            // Create an Intent to launch ExampleActivity
-            Intent intent = new Intent(context, MainActivity.class);
-            PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
-
-            // Get the layout for the App Widget and attach an on-click listener
-            // to the button
-            RemoteViews views = updateWidgetListView(context, appWidgetId);
-            views.setOnClickPendingIntent(R.id.refresh, pendingIntent);
-
-            // Tell the AppWidgetManager to perform an update on the current app widget
-            appWidgetManager.updateAppWidget(appWidgetId, views);
+        for (int appWidgetId : appWidgetIds) {
+            updateStockList(context, appWidgetManager, appWidgetId);
         }
-        super.onUpdate(context, appWidgetManager, appWidgetIds);
     }
 
-    private RemoteViews updateWidgetListView(Context context, int appWidgetId) {
+    public static void updateStockList(Context context,
+                                        AppWidgetManager appWidgetManager, int appWidgetId) {
         //which layout to show on widget
         RemoteViews remoteViews = new RemoteViews(
                 context.getPackageName(),R.layout.widget_stocks);
@@ -51,9 +36,19 @@ public class StockWidgetProvider extends AppWidgetProvider {
 
         //setting adapter to listview of the widget
         remoteViews.setRemoteAdapter(R.id.stock_list, svcIntent);
+
+        Intent appIntent = new Intent(context, HistoryActivity.class);
+        PendingIntent appPendingIntent = PendingIntent.getActivity(context, 0, appIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        remoteViews.setPendingIntentTemplate(R.id.stock_list, appPendingIntent);
+
         //setting an empty view in case of no data
         remoteViews.setEmptyView(R.id.stock_list, R.id.no_data);
-        return remoteViews;
+        // Add the wateringservice click handler
+        Intent quoteIntent = new Intent(context, QuoteIntentService.class);
+        PendingIntent wateringPendingIntent = PendingIntent.getService(context, 0, quoteIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        remoteViews.setOnClickPendingIntent(R.id.no_data, wateringPendingIntent);
+
+        appWidgetManager.updateAppWidget(appWidgetId, remoteViews);
     }
 
 }

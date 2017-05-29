@@ -58,7 +58,7 @@ ext {
     supportLibVersion = "25.3.1"
     butterknifeVersion = "8.5.1"
     guavaVersion = "20.0"
-    yahooFinanceAPIVersion = "3.6.1"
+    yahooFinanceAPIVersion = "3.8.0"
     opencsvVersion = "2.3"
     timberVersion = "4.4.0"
     mPAndroidChartVersion = "v3.0.2"

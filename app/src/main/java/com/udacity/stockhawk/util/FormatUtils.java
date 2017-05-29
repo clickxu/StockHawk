@@ -22,7 +22,7 @@ public class FormatUtils {
     }
 
     private static DecimalFormat getPercentageFormat() {
-        DecimalFormat result = (DecimalFormat) NumberFormat.getCurrencyInstance(Locale.US);
+        DecimalFormat result = (DecimalFormat) NumberFormat.getPercentInstance(Locale.getDefault());
         result.setMaximumFractionDigits(2);
         result.setMinimumFractionDigits(2);
         result.setPositivePrefix("+");

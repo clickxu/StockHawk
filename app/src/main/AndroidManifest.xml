@@ -24,8 +24,11 @@
         </activity>
 
         <activity android:name=".ui.HistoryActivity"
-                  android:parentActivityName=".ui.MainActivity"
-                  android:exported="false"/>
+                  android:parentActivityName=".ui.MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="ui.MainActivity" />
+        </activity>
 
         <activity android:name=".widget.StockWidgetConfigActivity">
             <intent-filter>

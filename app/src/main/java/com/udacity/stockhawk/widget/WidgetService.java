@@ -5,14 +5,14 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.os.Bundle;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
 
 import com.udacity.stockhawk.R;
 import com.udacity.stockhawk.data.Contract;
 import com.udacity.stockhawk.data.PrefUtils;
-
-import timber.log.Timber;
+import com.udacity.stockhawk.ui.HistoryActivity;
 
 import static com.udacity.stockhawk.util.FormatUtils.sDollarFormat;
 import static com.udacity.stockhawk.util.FormatUtils.sDollarFormatWithPlus;
@@ -56,13 +56,13 @@ public class WidgetService extends RemoteViewsService {
 
         @Override
         public void onCreate() {
-            mCursor = query();
         }
 
         @Override
         public void onDataSetChanged() {
+
             synchronized (sWidgetLock) {
-                query();
+                mCursor = query();
             }
         }
 
@@ -78,6 +78,7 @@ public class WidgetService extends RemoteViewsService {
 
         @Override
         public int getCount() {
+
             synchronized (sWidgetLock) {
                 if (mCursor == null) {
                     return 0;
@@ -93,20 +94,19 @@ public class WidgetService extends RemoteViewsService {
                 final RemoteViews remoteView = new RemoteViews(
                         mContext.getPackageName(), R.layout.list_item_quote);
 
-                mCursor.moveToFirst();
-                mCursor.move(position);
-
+                mCursor.moveToPosition(position);
                 float rawAbsoluteChange = mCursor.getFloat(Contract.Quote.POSITION_ABSOLUTE_CHANGE);
                 float percentageChange = mCursor.getFloat(Contract.Quote.POSITION_PERCENTAGE_CHANGE);
 
-                String changeStr = sDollarFormatWithPlus.format(rawAbsoluteChange);
+                String change = sDollarFormatWithPlus.format(rawAbsoluteChange);
                 String percentage = sPercentageFormat.format(percentageChange / 100);
                 remoteView.setTextViewText(R.id.symbol, mCursor.getString(Contract.Quote.POSITION_SYMBOL));
                 remoteView.setTextViewText(R.id.price,
                         sDollarFormat.format(mCursor.getFloat(Contract.Quote.POSITION_PRICE)));
+
                 if (PrefUtils.getDisplayMode(mContext)
                         .equals(mContext.getString(R.string.pref_display_mode_absolute_key))) {
-                    remoteView.setTextViewText(R.id.change, changeStr);
+                    remoteView.setTextViewText(R.id.change, change);
                 } else {
                     remoteView.setTextViewText(R.id.change, percentage);
                 }
@@ -118,7 +118,13 @@ public class WidgetService extends RemoteViewsService {
 
                 int symbolColumn = mCursor.getColumnIndex(Contract.Quote.COLUMN_SYMBOL);
                 final String symbolStr = mCursor.getString(symbolColumn);
-                //view.setOnClickListener(v -> HistoryActivity.launch(mContext, symbolStr));
+
+                Bundle extras = new Bundle();
+                extras.putString(HistoryActivity.TARGET_SYMBOL, symbolStr);
+                Intent fillInIntent = new Intent();
+                fillInIntent.putExtras(extras);
+                remoteView.setOnClickFillInIntent(R.id.stock_price, fillInIntent);
+
                 return remoteView;
             }
         }

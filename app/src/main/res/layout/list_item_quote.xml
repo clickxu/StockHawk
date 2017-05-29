@@ -5,6 +5,7 @@
     android:layout_height="?android:attr/listPreferredItemHeight"
     android:gravity="center_vertical"
     android:orientation="horizontal"
+    android:id="@+id/stock_price"
     android:paddingLeft="16dp"
     android:paddingRight="16dp">
 
