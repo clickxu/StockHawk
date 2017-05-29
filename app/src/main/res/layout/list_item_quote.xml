@@ -6,8 +6,8 @@
     android:gravity="center_vertical"
     android:orientation="horizontal"
     android:id="@+id/stock_price"
-    android:paddingLeft="16dp"
-    android:paddingRight="16dp">
+    android:paddingLeft="@dimen/content_horizontal_padding"
+    android:paddingRight="@dimen/content_horizontal_padding">
 
     <TextView
         android:id="@+id/symbol"

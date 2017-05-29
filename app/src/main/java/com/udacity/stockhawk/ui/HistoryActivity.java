@@ -95,7 +95,8 @@ public class HistoryActivity extends AppCompatActivity
         mChart.setScaleYEnabled(false);
         mChart.setScaleXEnabled(true);
         mChart.setPinchZoom(false);
-        mChart.getAxisRight().setEnabled(false);
+        mChart.getAxisLeft().setEnabled(false);
+        mChart.getAxisRight().setEnabled(true);
         mChart.getLegend().setEnabled(false);
         mChart.setNoDataTextColor(Color.WHITE);
     }
@@ -183,7 +184,7 @@ public class HistoryActivity extends AppCompatActivity
         xAxis.setValueFormatter(new TimeBaseXAxisValueFormatter(values));
         xAxis.setTextColor(Color.WHITE);
 
-        YAxis yAxis = mChart.getAxisLeft();
+        YAxis yAxis = mChart.getAxisRight();
         yAxis.removeAllLimitLines();
         yAxis.setAxisMaximum(rangeMax);
         yAxis.setAxisMinimum(rangeMin);
