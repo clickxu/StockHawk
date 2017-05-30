@@ -6,8 +6,8 @@
     android:gravity="center_vertical"
     android:orientation="horizontal"
     android:id="@+id/stock_price"
-    android:paddingLeft="@dimen/content_horizontal_padding"
-    android:paddingRight="@dimen/content_horizontal_padding">
+    android:paddingStart="@dimen/content_horizontal_padding"
+    android:paddingEnd="@dimen/content_horizontal_padding">
 
     <TextView
         android:id="@+id/symbol"
@@ -37,8 +37,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@drawable/percent_change_pill_green"
-            android:paddingLeft="3dp"
-            android:paddingRight="3dp"
+            android:paddingStart="3dp"
+            android:paddingEnd="3dp"
             tools:text="100%" />
     </LinearLayout>
 </LinearLayout>
